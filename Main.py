@@ -40,6 +40,7 @@ def remove_wav_convert_folder():
         shutil.rmtree(dirConvertToWAV)
 
 
+dots = 0
 def printText():
     if stopThreading == False:
         threading.Timer(printRefreshRate, printText).start()
@@ -49,7 +50,9 @@ def printText():
     else:
         os.system('clear')  # For Linux/OS X
 
-    sys.stdout.write("%s \r" % (consoleOutputText))
+    sys.stdout.write("%s %s\r" % (consoleOutputText, dots))
+    dots += 1
+    dots %= 4
     sys.stdout.flush()
 
 
@@ -99,7 +102,7 @@ for fileName in os.listdir(dirTrainingData):
 # print(samplesFiles)
 
 
-consoleOutputText += 'Convert Files Done [100%]\n'
+consoleOutputText += '\nConvert Files Done [100%]\n\n'
 
 
 # START Extracting ------------------------------------
@@ -152,10 +155,10 @@ for sample in samplesFiles:
     sr, audio = wavfile.read(sample)
     time, frequency, confidence, activation = crepe.predict(
         audio, sr, viterbi=True)
-    consoleOutputText += 'File: ' + sample + ' Done [100%]'
+    consoleOutputText += 'File: ' + sample + ' Done [100%]\n'
 
 
-consoleOutputText += 'Predicting Process Finished!\n'
+consoleOutputText += '\nPredicting Process Finished!\n\n'
 
 
 # Move csv file to classifications dir
@@ -165,7 +168,7 @@ for f in currentDirFiles:
         shutil.move(f, dirClassifications)
 
 
-consoleOutputText += 'csv files moved to path: ' + dirClassifications + "\n"
+consoleOutputText += '\ncsv files moved to path: ' + dirClassifications + "\n\n"
 
 
 # Load data from csv files
@@ -180,11 +183,25 @@ for file in os.listdir(dirClassifications):
 
     # print(tracks)
 
-consoleOutputText += 'Min and Max Frequencies Done!\n'
+consoleOutputText += '\nMin and Max Frequencies Done!\n\n'
 
 
 # Process Input
 process_input(inputFile)
+
+
+# v1.0 greedy evaluation
+
+minDif = math.inf
+for track in tracks:
+    minFreq, maxFreq = track
+    minDif = min(minDif, min(minFreq, maxFreq))
+    consoleOutputText += str(minFreq) + " | " +  maxFreq
+
+consoleOutputText += str(minDif)
+
+# Continue Eva HERE ...
+
 
 
 remove_wav_convert_folder()
